@@ -1,13 +1,26 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+
+.dark-mode {
+  background-color: #222;
+  color: white;
+  /* Add other dark mode styles here */
+}
+.dashbg{
+  /* background-color:#f1f2f3; */
+  color: black;
+}
+/* .table-container {
+  max-height: 400px; 
+  overflow-y: auto;
+} */
+input.largerCheckbox {
+  width: 15px;
+  height: 31px;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
+/* my style */
+
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
