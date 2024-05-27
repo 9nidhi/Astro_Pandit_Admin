@@ -1,7 +1,7 @@
 import React from 'react'
 import { FaTags, FaTshirt } from 'react-icons/fa'
 import { Link, Outlet, useLocation } from 'react-router-dom';
-
+import "../../src/all.css"
 import { BiSolidDashboard } from 'react-icons/bi';
 
 
@@ -38,6 +38,26 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
                         <div className={`flex items-center p-3 space-x-3 group   text-lg ${location.pathname === '/payment' ? 'flex text-black  font-semibold items-center py-2 px-4 text-black rounded-md menubg' : '  '}`}>
                             <FaTags size={20} />
                             <Link to='/payment'  onClick={handleLinkClick}>Payment</Link>
+                        </div>
+                        <div className={`flex items-center p-3 space-x-3 group   text-lg ${location.pathname === '/dashboard/gorupee' ? 'flex text-black  font-semibold items-center py-2 px-4 text-black rounded-md menubg' : '  '}`}>
+                            <FaTags size={20} />
+                            <Link to='/dashboard/gorupee'  onClick={handleLinkClick}>Gorupee</Link>
+                        </div>
+
+                        <div className={`flex items-center p-3 space-x-3 group   text-lg ${location.pathname === '/dashboard/app2' ? 'flex text-black  font-semibold items-center py-2 px-4 text-black rounded-md menubg' : '  '}`}>
+                            <FaTags size={20} />
+                            <Link to='/dashboard/app2'  onClick={handleLinkClick}>App2</Link>
+                        </div>
+
+
+                        <div className={`flex items-center p-3 space-x-3 group   text-lg ${location.pathname === '/dashboard/app3' ? 'flex text-black  font-semibold items-center py-2 px-4 text-black rounded-md menubg' : '  '}`}>
+                            <FaTags size={20} />
+                            <Link to='/dashboard/app3'  onClick={handleLinkClick}>App3</Link>
+                        </div>
+                        
+                        <div className={`flex items-center p-3 space-x-3 group   text-lg ${location.pathname === '/paymentmode' ? 'flex text-black  font-semibold items-center py-2 px-4 text-black rounded-md menubg' : '  '}`}>
+                            <FaTags size={20} />
+                            <Link to='/paymentmode'  onClick={handleLinkClick}>Payment Mode</Link>
                         </div>
 
                     </div>

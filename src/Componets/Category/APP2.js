@@ -7,250 +7,196 @@ import 'chartjs-adapter-date-fns';
 import { Title, Tooltip, Legend } from 'chart.js';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
-import "../../src/all.css"
+import "../../../src/all.css"
 
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const TotalTransaction = () => {
-  const [paymentData, setPaymentData] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [searchError, setSearchError] = useState('');
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [totalPending, setTotalPending] = useState(0);
-  const [totalTransactions, setTotalTransactions] = useState(0);
-  const [successCount, setSuccessCount] = useState(0);
-  const [paymentSearchData, setPaymentSearchData] = useState([]);
-  const [successData, setSuccessData] = useState([]);
-  const [successTotalData, setTotalSuccessData] = useState(0);
-  const [dailySuccessData, setDailySuccessData] = useState([]);
-  const [webUrlData, setWebUrlData] = useState([]); // State to hold data for pie chart
-  const [filterData,setFilteredData]=useState('');
-  const location = useLocation();
-
-  const fetchData = async () => {
-    try {
+const App2 = () => {
+    const [paymentData, setPaymentData] = useState([]);
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [searchError, setSearchError] = useState('');
+    const [totalAmount, setTotalAmount] = useState(0);
+    const [totalPending, setTotalPending] = useState(0);
+    const [totalTransactions, setTotalTransactions] = useState(0);
+    const [successCount, setSuccessCount] = useState(0);
+    const [successData, setSuccessData] = useState([]);
+    const [successTotalData, setTotalSuccessData] = useState(0);
+    const [dailySuccessData, setDailySuccessData] = useState([]);
+    const [webUrlData, setWebUrlData] = useState([]);
+    const [filterData, setFilteredData] = useState([]);
+    const location = useLocation();
+  
+    const fetchData = async () => {
+      try {
         const response = await fetch('https://tronixpayment.axispay.cloud/api/data');
         if (response.ok) {
-            const data = await response.json();
-            if (data) {
-                const formattedData = data.map(item => {
-                    const date = new Date(item.payment_time_local);
-                    const options = {
-                      year: 'numeric',
-                      month: 'numeric',
-                      day: 'numeric',
-                      hour: 'numeric',
-                      minute: 'numeric',
-                      second: 'numeric',
-                      hour12: true,
-                      timeZone: 'Asia/Kolkata' // Ensure the timezone is set to Kolkata
-                    };
-
-                    // Format the date and time
-                    const transactionDate = new Intl.DateTimeFormat('en-IN', options).format(date);
-                    const transactionTime = date.toLocaleTimeString('en-IN', { hour12: true, timeZone: 'Asia/Kolkata' });
-
-
-                    return {
-                        ...item,
-                        transactionDate,
-                        transactionTime,
-                    };
-                }).reverse();
-                setPaymentData(formattedData);
-                setFilteredData(formattedData); // Initialize filteredData with all data
-                setSearchError(''); // Clear search error when new data is fetched
-            } else {
-                console.error('Data format is not as expected');
-            }
+          const data = await response.json();
+          if (data) {
+            const dataLength = data.length;
+            const formattedData = data.map((item, index) => {
+              const date = new Date(item.payment_time_local);
+              const options = {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                hour12: true,
+                timeZone: 'Asia/Kolkata'
+              };
+  
+              const transactionDate = new Intl.DateTimeFormat('en-IN', options).format(date);
+              const transactionTime = date.toLocaleTimeString('en-IN', { hour12: true, timeZone: 'Asia/Kolkata' });
+  
+              let appName = '';
+              if (index >= dataLength - 20) {
+                appName = 'app1';
+              } else if (index >= dataLength - 40 && index < dataLength - 20) {
+                appName = 'app2';
+              } else if (index >= dataLength - 60 && index < dataLength - 40) {
+                appName = 'app3';
+              }
+  
+              return {
+                ...item,
+                transactionDate,
+                transactionTime,
+                app_name: appName,
+              };
+            }).reverse();
+  
+            // Filter the data to get only records where appName is 'app1'
+            const filteredApp1Data = formattedData.filter(item => item.app_name === 'app2');
+            
+            setPaymentData(formattedData);
+            setFilteredData(filteredApp1Data);
+            setSearchError('');
+          } else {
+            console.error('Data format is not as expected');
+          }
         } else {
-            console.error('Failed to fetch data:', response.status, response.statusText);
+          console.error('Failed to fetch data:', response.status, response.statusText);
         }
-    } catch (error) {
+      } catch (error) {
         console.error('Error fetching data:', error);
-    }
-};
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    calculateTotalAmount();
-    calculatePendingTotalAmount();
-    calculateTotalTransactions();
-    calculateDailySuccessData();
-    calculateWebUrlData(); // Calculate data for pie chart
-  }, [paymentData]);
-
-  const calculateTotalAmount = () => {
-    const successfulPayments = paymentData.filter(payment => payment.payment_status === 'PAYMENT_SUCCESS');
-    const totalAmount = successfulPayments.reduce((acc, payment) => acc + parseFloat(payment.payment_amount), 0);
-    setTotalAmount(totalAmount);
-  };
-
-  const calculatePendingTotalAmount = () => {
-    const pendingPayments = paymentData.filter(payment => payment.payment_status === 'PAYMENT_PENDING');
-    const totalPending = pendingPayments.reduce((acc, payment) => acc + parseFloat(payment.payment_amount), 0);
-    setTotalPending(totalPending);
-  };
-
-  const calculateTotalTransactions = () => {
-    setTotalTransactions(paymentData.length);
-  };
-
-  const calculateDailySuccessData = () => {
-    const successfulPayments = paymentData.filter(payment => payment.payment_status === 'PAYMENT_SUCCESS');
-
-    const dailySuccessMap = successfulPayments.reduce((acc, payment) => {
-      const date = new Date(payment.payment_time).toISOString().split('T')[0];
-      if (!acc[date]) acc[date] = 0;
-      acc[date]++;
-      return acc;
-    }, {});
-
-    const dailySuccessData = Object.keys(dailySuccessMap).map(date => ({
-      date,
-      count: dailySuccessMap[date]
-    })).sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    setDailySuccessData(dailySuccessData);
-  };
-
-
-  // const handleSearch = () => {
-  //   if (!selectedDate) {
-  //     setSearchError('Please select a date.');
-  //     return;
-  //   }
+      }
+    };
   
-  //   const formattedDate = format(selectedDate, 'dd/M/yyyy');
+    useEffect(() => {
+      fetchData();
+    }, []);
   
-  //   fetch(`http://localhost:4700/api/search?date=${formattedDate}`)
-  //     .then(response => {
-  //       if (response.ok) {
-  //         return response.json();
-  //       } else {
-  //         throw new Error('Data not found');
-  //       }
-  //     })
-  //     .then(data => {
-  //       if (data.length === 0) {
-  //         setSearchError('No records found.');
-  //         setSuccessData([]);
-  //         setSuccessCount(0);
-  //         setTotalSuccessData(0);
-  //       } else {
-  //         const options = {
-  //           year: 'numeric',
-  //           month: 'numeric',
-  //           day: 'numeric',
-  //           hour: 'numeric',
-  //           minute: 'numeric',
-  //           second: 'numeric',
-  //           hour12: true,
-  //           timeZone: 'Asia/Kolkata' // Set the timezone to Kolkata (UTC+05:30)
-  //         };
+    useEffect(() => {
+      calculateTotalAmount();
+      calculatePendingTotalAmount();
+      calculateTotalTransactions();
+      calculateDailySuccessData();
+      calculateWebUrlData();
+    }, [filterData]);
   
-  //         const successTransactions = data.filter(payment => payment.payment_status === 'PAYMENT_SUCCESS');
-  //         const successData = successTransactions.map(payment => {
-  //           const paymentTime = new Date(payment.payment_time);
-  //           const formatter = new Intl.DateTimeFormat('en-IN', options);
-  //           const formattedDateTime = formatter.format(paymentTime);
-  //           const [transactionDate, transactionTime] = formattedDateTime.split(', ');
+    const calculateTotalAmount = () => {
+      const successfulPayments = filterData.filter(payment => payment.payment_status === 'PAYMENT_SUCCESS');
+      const totalAmount = successfulPayments.reduce((acc, payment) => acc + parseFloat(payment.payment_amount), 0);
+      setTotalAmount(totalAmount);
+    };
   
-  //           return {
-  //             status: payment.payment_status,
-  //             amount: payment.payment_amount,
-  //             payment_weburl:payment.payment_weburl,
-  //             transactionDate,
-  //             transactionTime
-  //           };
-  //         }).reverse();
+    const calculatePendingTotalAmount = () => {
+      const pendingPayments = filterData.filter(payment => payment.payment_status === 'PAYMENT_PENDING');
+      const totalPending = pendingPayments.reduce((acc, payment) => acc + parseFloat(payment.payment_amount), 0);
+      setTotalPending(totalPending);
+    };
   
-  //         const successCount = successTransactions.length;
-  //         const totalAmount = successData.reduce((total, transaction) => total + parseFloat(transaction.amount), 0);
+    const calculateTotalTransactions = () => {
+      setTotalTransactions(filterData.length);
+    };
   
-  //         setSearchError('');
-  //         setSuccessData(successData);
-  //         setSuccessCount(successCount);
-  //         setTotalSuccessData(totalAmount);
-  //       }
-  //     })
-  //     .catch(error => {
-  //       setSearchError('Error fetching data.');
-  //       console.error('Error:', error);
-  //     });
-  // };
+    const calculateDailySuccessData = () => {
+      const successfulPayments = filterData.filter(payment => payment.payment_status === 'PAYMENT_SUCCESS');
   
-  const handleSearch = () => {
-    if (!selectedDate) {
-      setSearchError('Please select a date.');
-      return;
-    }
+      const dailySuccessMap = successfulPayments.reduce((acc, payment) => {
+        const date = new Date(payment.payment_time).toISOString().split('T')[0];
+        if (!acc[date]) acc[date] = 0;
+        acc[date]++;
+        return acc;
+      }, {});
   
-    const formattedDate = format(selectedDate, 'dd/M/yyyy');
+      const dailySuccessData = Object.keys(dailySuccessMap).map(date => ({
+        date,
+        count: dailySuccessMap[date]
+      })).sort((a, b) => new Date(a.date) - new Date(b.date));
   
-    fetch(`https://tronixpayment.axispay.cloud/api/search?date=${formattedDate}`)
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error('Data not found');
-        }
-      })
-      .then(data => {
-        if (data.length === 0) {
-          setSearchError('No records found.');
-          setSuccessData([]);
-          setSuccessCount(0);
-          setTotalSuccessData(0);
-        } else {
-          const options = {
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            second: 'numeric',
-            hour12: true,
-            timeZone: 'Asia/Kolkata' // Set the timezone to Kolkata (UTC+05:30)
-          };
+      setDailySuccessData(dailySuccessData);
+    };
   
-          const successTransactions = data.filter(payment => payment.payment_status === 'PAYMENT_SUCCESS');
-          const successData = successTransactions.map(payment => {
-            const paymentTime = new Date(payment.payment_time);
-            const formatter = new Intl.DateTimeFormat('en-IN', options);
-            const formattedDateTime = formatter.format(paymentTime);
-            const [transactionDate, transactionTime] = formattedDateTime.split(', ');
+    const handleSearch = () => {
+      if (!selectedDate) {
+        setSearchError('Please select a date.');
+        return;
+      }
   
-            return {
-              status: payment.payment_status,
-              amount: payment.payment_amount,
-              payment_weburl: payment.payment_weburl,
-              transactionDate,
-              transactionTime
+      const formattedDate = format(selectedDate, 'dd/M/yyyy');
+  
+      fetch(`https://tronixpayment.axispay.cloud/api/search?date=${formattedDate}`)
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('Data not found');
+          }
+        })
+        .then(data => {
+          if (data.length === 0) {
+            setSearchError('No records found.');
+            setSuccessData([]);
+            setSuccessCount(0);
+            setTotalSuccessData(0);
+          } else {
+            const options = {
+              year: 'numeric',
+              month: 'numeric',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: 'numeric',
+              second: 'numeric',
+              hour12: true,
+              timeZone: 'Asia/Kolkata'
             };
-          }).reverse();
   
-          const successCount = successTransactions.length;
-          const totalAmount = successData.reduce((total, transaction) => total + parseFloat(transaction.amount), 0);
+            const successTransactions = data.filter(payment => payment.payment_status === 'PAYMENT_SUCCESS');
+            const successData = successTransactions.map(payment => {
+              const paymentTime = new Date(payment.payment_time);
+              const formatter = new Intl.DateTimeFormat('en-IN', options);
+              const formattedDateTime = formatter.format(paymentTime);
+              const [transactionDate, transactionTime] = formattedDateTime.split(', ');
   
-          setSearchError('');
-          setSuccessData(successData);
-          setSuccessCount(successCount);
-          setTotalSuccessData(totalAmount);
-        }
-      })
-      .catch(error => {
-        setSearchError('Error fetching data.');
-        console.error('Error:', error);
-      });
-  };
+              return {
+                status: payment.payment_status,
+                amount: payment.payment_amount,
+                payment_weburl: payment.payment_weburl,
+                app_name:payment.app_name,
+                transactionDate,
+                transactionTime
+              };
+            }).reverse();
   
+            const successCount = successTransactions.length;
+            const totalAmount = successData.reduce((total, transaction) => total + parseFloat(transaction.amount), 0);
   
+            setSearchError('');
+            setSuccessData(successData);
+            setSuccessCount(successCount);
+            setTotalSuccessData(totalAmount);
+          }
+        })
+        .catch(error => {
+          setSearchError('Error fetching data.');
+          console.error('Error:', error);
+        });
+    };
+
   const formatDate = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -302,11 +248,14 @@ const TotalTransaction = () => {
     ]
   };
 
-
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <main className="main-container">
       <div className="p-5">
+        {/* <h1 className='text-black text-right font-bold text-xl'>Gorupee DashBoard</h1> */}
         <div className="main-cards">
           <div className="relative p-5 bg-gradient-to-r from-[#581c87] to-[#a78bfa] rounded-md overflow-hidden">
             <div className="relative z-10 mb-4 text-white text-4xl leading-none font-semibold">{totalTransactions}</div>
@@ -324,14 +273,14 @@ const TotalTransaction = () => {
           </div>
         </div>
 
-        <div className="flex">
+        {/* <div className="flex">
           <div className="p-6 overflow-x-auto flex-grow">
             <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false }} height={200} />
           </div>
           <div className="p-6 overflow-x-auto flex-grow">
             <Line data={lineChartData} />
           </div>
-        </div>
+        </div> */}
 
         <div style={{ borderBottom: '1px solid #44023d', padding: '12px 0' }}></div>
 
@@ -410,18 +359,23 @@ const TotalTransaction = () => {
                     WebURL
                   </p>
                 </th>
+                <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                  <p className="antialiased font-sans text-sm text-blue-gray-900 flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                    App_Name
+                  </p>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {successData.length === 0 ? (
+              {filterData.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="text-center text-black py-4">
                     No records found.
                   </td>
                 </tr>
               ) : (
-                successData.length > 0 ? (
-                  successData.map((payment, index) => (
+                filterData.length > 0 ? (
+                  filterData.map((payment, index) => (
                     <tr key={index}>
 
                     <td className="p-4 border-b border-blue-gray-50">
@@ -463,14 +417,14 @@ const TotalTransaction = () => {
                     <td className="p-4 border-b border-blue-gray-50">
                         <div className="flex flex-col">
                             <p className="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-bold ">
-                                Rs.{payment.amount}
+                                Rs.{payment.payment_amount}
                             </p>
                         </div>
                     </td>
                     <td className="p-4 border-b border-blue-gray-50">
                         <div className="w-max">
-                            <p className={`block antialiased font-sans text-sm leading-normal font-bold ${payment.status === 'PAYMENT_SUCCESS' ? 'text-green-900 bg-green-200' : payment.status === 'PAYMENT_PENDING' ? 'text-red-900 bg-red-200' : 'text-yellow-900 bg-yellow-200'}`}>
-                                {payment.status}
+                            <p className={`block antialiased font-sans text-sm leading-normal font-bold ${payment.payment_status === 'PAYMENT_SUCCESS' ? 'text-green-900 bg-green-200' : payment.payment_status === 'PAYMENT_PENDING' ? 'text-red-900 bg-red-200' : 'text-yellow-900 bg-yellow-200'}`}>
+                                {payment.payment_status}
                             </p>
                         </div>
                     </td>
@@ -479,6 +433,15 @@ const TotalTransaction = () => {
                             <div className="flex flex-col">
                                 <p className="block antialiased font-sans text-sm text-[#831843] leading-normal text-blue-gray-900 font-bold">
                                 {payment.payment_weburl}
+                                </p>
+                            </div>
+                        </div>
+                    </td>
+                    <td className="p-4 border-b border-blue-gray-50">
+                        <div className="flex items-center gap-3">
+                            <div className="flex flex-col">
+                                <p className="block antialiased font-sans text-sm text-[#831843] leading-normal text-blue-gray-900 font-bold">
+                                {payment.app_name}
                                 </p>
                             </div>
                         </div>
@@ -503,4 +466,4 @@ const TotalTransaction = () => {
   );
 }
 
-export default TotalTransaction;
+export default App2;

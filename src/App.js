@@ -11,6 +11,10 @@ import "react-toastify/dist/ReactToastify.css";
 import Login from './Componets/Login';
 
 import Payment from './Componets/Category/Payme';
+import Gorupee from './Componets/Category/Gorupee';
+import App2 from './Componets/Category/APP2';
+import App3 from './Componets/Category/App3';
+import SelectModePayment from './Componets/Category/SelectModePayment';
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
@@ -40,7 +44,11 @@ function App() {
             <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
             <Routes>
               <Route path="/dashboard" element={<Home />} />
-              <Route path="/payment" element={<Payment isDarkMode={isDarkMode} />} />
+              <Route path="/payment" element={<Payment  />} />
+              <Route path="/dashboard/gorupee" element={<Gorupee  />} />
+              <Route path="/dashboard/app2" element={<App2  />} />
+              <Route path="/dashboard/app3" element={<App3  />} />
+              <Route path="/paymentmode" element={<SelectModePayment  />} />
              
             </Routes>
             <ToastContainer closeButton={false} position="bottom-left" />

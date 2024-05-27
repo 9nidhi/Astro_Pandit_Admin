@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
+import Pagination from '../Pagination';
+import "../../../src/all.css"
+
 import moment from 'moment-timezone'; // Ensure you are importing the timezone variant
 
 const Payment = () => {
@@ -9,14 +12,76 @@ const Payment = () => {
   const [selectedDate, setSelectedDate] = useState(null); // Use a Date object for DatePicker
   const [searchError, setSearchError] = useState('');
   const [filteredData, setFilteredData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = 10;
+  // const fetchData = async () => {
+  //   try {
+  //     const response = await fetch('https://tronixpayment.axispay.cloud/api/data');
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       if (data) {
+  //         const dataLength = data.length;
+  //         const formattedData = data.map((item,index) => {
+  //           const date = new Date(item.payment_time_local);
+  //           const options = {
+  //             year: 'numeric',
+  //             month: 'numeric',
+  //             day: 'numeric',
+  //             hour: 'numeric',
+  //             minute: 'numeric',
+  //             second: 'numeric',
+  //             hour12: true,
+  //             timeZone: 'Asia/Kolkata'
+  //           };
 
-  const fetchData = async () => {
+  //           // Format the date and time
+  //           const transactionDate = new Intl.DateTimeFormat('en-IN', options).format(date);
+  //           const transactionTime = date.toLocaleTimeString('en-IN', { hour12: true, timeZone: 'Asia/Kolkata' });
+
+  //           let appName = '';
+  //           if (index >= dataLength - 20) {
+  //               appName = 'app1';
+  //           } else if (index >= dataLength - 40 && index < dataLength - 20) {
+  //               appName = 'app2';
+  //           } else if (index >= dataLength - 60 && index < dataLength - 40) {
+  //               appName = 'app3';
+  //           }
+
+  //           return {
+  //             ...item,
+  //             transactionDate,
+  //             transactionTime,
+  //             app_name: appName,
+  //           };
+  //         }).reverse();
+
+  //         //drashti code 
+
+
+
+
+  //         setPaymentData(formattedData);
+  //         setFilteredData(formattedData); // Initialize filteredData with all data
+  //         setSearchError(''); // Clear search error when new data is fetched
+  //       } else {
+  //         console.error('Data format is not as expected');
+  //       }
+  //     } else {
+  //       console.error('Failed to fetch data:', response.status, response.statusText);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
+
+  const fetchData = async (page) => { // Accept page as a parameter
     try {
-      const response = await fetch('https://tronixpayment.axispay.cloud/api/data');
+      const response = await fetch(`http://localhost:4700/api/data?page=${page}`); // Include the page parameter in the URL
       if (response.ok) {
         const data = await response.json();
         if (data) {
-          const formattedData = data.map(item => {
+          const dataLength = data.length;
+          const formattedData = data.map((item, index) => {
             const date = new Date(item.payment_time_local);
             const options = {
               year: 'numeric',
@@ -26,19 +91,30 @@ const Payment = () => {
               minute: 'numeric',
               second: 'numeric',
               hour12: true,
-              timeZone: 'Asia/Kolkata' // Ensure the timezone is set to Kolkata
+              timeZone: 'Asia/Kolkata'
             };
-  
+
             // Format the date and time
             const transactionDate = new Intl.DateTimeFormat('en-IN', options).format(date);
             const transactionTime = date.toLocaleTimeString('en-IN', { hour12: true, timeZone: 'Asia/Kolkata' });
-  
+
+            let appName = '';
+            if (index >= dataLength - 20) {
+              appName = 'app1';
+            } else if (index >= dataLength - 40 && index < dataLength - 20) {
+              appName = 'app2';
+            } else if (index >= dataLength - 60 && index < dataLength - 40) {
+              appName = 'app3';
+            }
+
             return {
               ...item,
               transactionDate,
               transactionTime,
+              app_name: appName,
             };
           }).reverse();
+
           setPaymentData(formattedData);
           setFilteredData(formattedData); // Initialize filteredData with all data
           setSearchError(''); // Clear search error when new data is fetched
@@ -52,7 +128,6 @@ const Payment = () => {
       console.error('Error fetching data:', error);
     }
   };
-  
 
 
   const handleSearch = () => {
@@ -79,8 +154,13 @@ const Payment = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    // Fetch data based on currentPage
+    fetchData(currentPage);
+  }, [currentPage]); // Fetch data whenever currentPage changes
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="flex flex-col main-container px-4 text-sm">
@@ -105,7 +185,7 @@ const Payment = () => {
             </nav>
 
             <div style={{ borderBottom: '1px solid #44023d', padding: '12px 0' }}>
-              {/* Content here */}
+
             </div>
 
             <div className="relative max-w-[19rem] mt-4">
@@ -126,6 +206,11 @@ const Payment = () => {
               </button>
             </div>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
           <div className="p-6 overflow-x-auto px-0">
             <table className="mt-4 w-full min-w-max table-auto text-left text-black">
               <thead>
@@ -155,10 +240,15 @@ const Payment = () => {
                       Amount
                     </p>
                   </th>
-                  
+
                   <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
                     <p className="antialiased font-sans text-sm text-blue-gray-900 flex items-center justify-between gap-2 font-normal leading-none opacity-70">
                       Status
+                    </p>
+                  </th>
+                  <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                    <p className="antialiased font-sans text-sm text-blue-gray-900 flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                      App_Name
                     </p>
                   </th>
                 </tr>
@@ -214,6 +304,13 @@ const Payment = () => {
                         <div className="w-max">
                           <p className={`block antialiased font-sans text-sm leading-normal font-bold ${payment.payment_status === 'PAYMENT_SUCCESS' ? 'text-green-900 bg-green-200' : payment.payment_status === 'PAYMENT_PENDING' ? 'text-red-900 bg-red-200' : ''}`}>
                             {payment.payment_status}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="p-4 border-b border-blue-gray-50">
+                        <div className="w-max">
+                          <p className={`block antialiased font-sans text-sm leading-normal font-bold ${payment.payment_status === 'PAYMENT_SUCCESS' ? 'text-green-900 bg-green-200' : payment.payment_status === 'PAYMENT_PENDING' ? 'text-red-900 bg-red-200' : ''}`}>
+                            {payment.app_name}
                           </p>
                         </div>
                       </td>
