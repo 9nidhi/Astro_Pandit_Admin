@@ -7,35 +7,39 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     pageNumbers.push(i);
   }
 
+  // Limit the page numbers to a range (e.g., 1 to 10)
+  const displayPageNumbers = pageNumbers.slice(0, 10);
+
   return (
     <nav className="flex justify-center mt-8">
-      <ul className="pagination">
-        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+      <ul className="flex space-x-2">
+        <li className={`page-item ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}>
           <button
             onClick={() => onPageChange(currentPage - 1)}
-            className="page-link"
+            className="px-2 py-1 border rounded-md bg-[#3a0843] text-white"
+            disabled={currentPage === 1}
           >
             Previous
           </button>
         </li>
-        {pageNumbers.map((number) => (
+        {displayPageNumbers.map((number) => (
           <li
             key={number}
-            className={`page-item ${currentPage === number ? 'active' : ''}`}
+            className={`page-item ${currentPage === number ? 'bg-blue-500 text-white border rounded-md' : 'bg-white text-black border rounded-md'}`}
           >
-            <button onClick={() => onPageChange(number)} className="page-link">
+            <button
+              onClick={() => onPageChange(number)}
+              className={`px-2 py-1 border rounded-md ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-white text-black'}`}
+            >
               {number}
             </button>
           </li>
         ))}
-        <li
-          className={`page-item ${
-            currentPage === totalPages ? 'disabled' : ''
-          }`}
-        >
+        <li className={`page-item ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}>
           <button
             onClick={() => onPageChange(currentPage + 1)}
-            className="page-link"
+            className="px-2 py-1 border rounded-md bg-[#3a0843] text-white transition-colors duration-200"
+            disabled={currentPage === totalPages}
           >
             Next
           </button>
