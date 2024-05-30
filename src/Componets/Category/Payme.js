@@ -3,7 +3,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 import Pagination from '../Pagination';
-import "../../../src/all.css"
+import "../../../src/all.css";
+import html2pdf from 'html2pdf.js';
 
 import moment from 'moment-timezone'; // Ensure you are importing the timezone variant
 
@@ -46,7 +47,8 @@ const Payment = () => {
               transactionTime,
               app_name: item.app_name,
               payer_name: item.payer_name,
-              payer_email: item.payer_email
+              payer_email: item.payer_email,
+              payment:item.payment
             };
           });
 
@@ -68,10 +70,6 @@ const Payment = () => {
   useEffect(() => {
     fetchData(currentPage);
   }, [currentPage]);
-
-
-
-
 
 
   const handleSearch = () => {
@@ -99,6 +97,7 @@ const Payment = () => {
 
   // const handleSearchTransactionId = () => {
   //   if (!searchTransactionId.trim()) {
+    
   //     setSearchError('Please enter a transaction ID');
   //     return;
   //   }
@@ -419,9 +418,6 @@ body {
   </div>
 </section>
 `;
-
-
-
     const blob = new Blob([invoiceContent], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -562,7 +558,11 @@ body {
                       Amount
                     </p>
                   </th>
-
+                  <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
+                    <p className="antialiased font-sans text-sm text-blue-gray-900 flex items-center justify-between gap-2 font-normal leading-none opacity-70">
+                      Payment Mode
+                    </p>
+                  </th>
                   <th className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
                     <p className="antialiased font-sans text-sm text-blue-gray-900 flex items-center justify-between gap-2 font-normal leading-none opacity-70">
                       Status
@@ -624,7 +624,7 @@ body {
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 border-b border-blue-gray-50">
+                      {/* <td className="p-4 border-b border-blue-gray-50">
                         <div className="flex items-center gap-3">
                           <div className="flex flex-col">
                             <p className="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">
@@ -632,11 +632,18 @@ body {
                             </p>
                           </div>
                         </div>
-                      </td>
+                      </td> */}
                       <td className="p-4 border-b border-blue-gray-50">
                         <div className="flex flex-col">
                           <p className="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-bold ">
                             Rs.{payment.payment_amount}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="p-4 border-b border-blue-gray-50">
+                        <div className="flex flex-col">
+                          <p className="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-bold ">
+                            {payment.payment} 
                           </p>
                         </div>
                       </td>
