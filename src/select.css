@@ -100,3 +100,9 @@
       width: 100%;
   }
 }
+
+input {
+  border: none; /* Remove the border */
+  outline: none; /* Remove the outline when focused */
+  
+}
