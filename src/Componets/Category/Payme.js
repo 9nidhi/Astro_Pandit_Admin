@@ -21,7 +21,7 @@ const Payment = () => {
 
   const fetchData = async (page) => {
     try {
-      const response = await fetch(`tronixpayment.axispay.cloud/api/data?page=${page}&limit=10`);
+      const response = await fetch(`https://tronixpayment.axispay.cloud/api/data?page=${page}&limit=10`);
       if (response.ok) {
         const { results, totalCount } = await response.json();
         if (results) {
